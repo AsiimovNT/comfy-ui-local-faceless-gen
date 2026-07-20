@@ -100,6 +100,12 @@ except Exception:
 total = 0
 for s in spec["segments"]:
     for blk in s.get("animate", []):
+        stem = os.path.splitext(s["image"])[0]
+        n = int(blk.get("variants", 1))
+        outs = [os.path.join(ANIM, "%s__%s_%d.png" % (stem, blk["element"], k)) for k in range(n)]
+        if all(os.path.exists(o) for o in outs):
+            print("  S%-2d %-8s exists -> skip (delete the png to regenerate)" % (s["id"], blk["element"]))
+            continue
         base_path = os.path.join(ASSETS, s["image"])
         base = Image.open(base_path).convert("RGB")
         mask, _ = make_mask(base.size, blk["mask"], blk.get("shape", "ellipse"))

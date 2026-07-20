@@ -58,6 +58,10 @@
       "image": "s02_teahouse.png",
       "img_prompt": "Interior of a warm lantern-lit Japanese teahouse room at night, a young geisha woman with stark white painted face makeup and small red lips and black hair in an elaborate bun with pink flower ornaments, wearing an ornate pink and red kimono, kneeling and pouring sake while three wealthy Japanese men in dark kimono sit laughing around a low table.",
       "kb": "pan_left",
+      "animate": [
+        {"element": "lantern", "pattern": "flicker", "shape": "rect", "mask": [0.44, 0.0, 0.58, 0.22],
+         "prompt": "round paper lantern glowing noticeably brighter, warm intense flickering light"}
+      ],
       "vo": "She is a work of art that took twenty years and a small fortune to make. And tonight, behind a smile that could stop a war, she is quietly planning how to disappear."
     },
     {
@@ -65,6 +69,12 @@
       "image": "s03_corridor.png",
       "img_prompt": "A young geisha woman with stark white painted face makeup and black hair in an elaborate bun with pink flower ornaments, wearing an ornate pink kimono, standing alone in a dark empty wooden corridor at night, looking back over her shoulder toward a closed paper sliding door, one paper lantern glowing, melancholy and quiet.",
       "kb": "push_in",
+      "animate": [
+        {"element": "eyes", "pattern": "blink", "shape": "ellipse", "mask": [0.41, 0.34, 0.61, 0.44],
+         "prompt": "both eyes fully closed at the same time, symmetric closed eyes, thin curved closed eyelash lines, calm expression"},
+        {"element": "lantern", "pattern": "flicker", "shape": "rect", "mask": [0.69, 0.05, 0.78, 0.30],
+         "prompt": "paper lantern glowing noticeably brighter, warm intense flickering light"}
+      ],
       "vo": "To understand her, you have to become her. So we go back."
     },
     {
@@ -102,6 +112,10 @@
       "image": "s08_scrubbing.png",
       "img_prompt": "A small seven-year-old Japanese girl with a straight black bob haircut wearing a plain grey kimono, on her hands and knees scrubbing a long wooden floor corridor with a wet cloth and a wooden bucket beside her, cold early dawn light through paper screen walls, exhausted and small.",
       "kb": "pull_out",
+      "animate": [
+        {"element": "eyes", "pattern": "blink", "shape": "ellipse", "mask": [0.40, 0.40, 0.59, 0.51],
+         "prompt": "both eyes fully closed at the same time as two simple curved lines side by side, calm expression"}
+      ],
       "vo": "You will spend the next twenty years trying to pay off the price of your own life. At first, you are not a geisha at all. You are a shikomi. A servant.",
       "tts": "You will spend the next twenty years trying to pay off the price of your own life. At first, you are not a geisha at all. You are a shee-koh-mee. A servant."
     },
@@ -110,6 +124,10 @@
       "image": "s09_watching.png",
       "img_prompt": "A small seven-year-old Japanese girl with a straight black bob haircut wearing a plain grey kimono, peeking out from behind a wooden doorway at night, watching two elegant geisha women in bright ornate kimono with white painted faces walking gracefully past under glowing red paper lanterns, awe and longing.",
       "kb": "push_in",
+      "animate": [
+        {"element": "eyes", "pattern": "blink", "shape": "ellipse", "mask": [0.33, 0.52, 0.46, 0.61],
+         "prompt": "both eyes fully closed as two simple curved lines, calm expression"}
+      ],
       "vo": "You watch the older women glide through the lantern light like they are made of something you are not."
     },
     {
@@ -117,6 +135,10 @@
       "image": "s10_determination.png",
       "img_prompt": "Close up of the face of a small seven-year-old Japanese girl with a straight black bob haircut, quiet determined expression, eyes reflecting warm glowing lantern light, dark night background.",
       "kb": "push_in",
+      "animate": [
+        {"element": "eyes", "pattern": "blink", "shape": "ellipse", "mask": [0.26, 0.40, 0.72, 0.63],
+         "prompt": "both eyes fully closed, symmetric closed eyes, gentle closed eyelids with eyelashes, calm expression"}
+      ],
       "vo": "And a terrible, wonderful thought takes root. One day, that will be you."
     }
   ]
