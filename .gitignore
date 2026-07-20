@@ -1,0 +1,20 @@
+# Generated media — regenerable from the pipeline, kept out of git
+assets/
+work/
+*.mp4
+*.wav
+*.mp3
+*.png
+
+# Generated pipeline artifacts
+plan.json
+captions.ass
+vo_manifest.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Secrets (never commit an API key)
+.env
+*.key
