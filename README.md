@@ -64,13 +64,15 @@ Z-Image Turbo, seed = `render.base_seed + id` (deterministic; add a `"seed"` fie
 to a segment to re-roll just that shot). ~30s/frame at 1920×1088. First-ever frames
 are backed up to `assets/cloud_backup/`.
 
-### Step 2 — voiceover (agent-driven)
-**This step needs the agent** — the Higgsfield MCP isn't a REST key a script can hold.
-Ask Claude to generate VO for each segment's `vo` (or `tts` phonetic override) using
-`text2speech_v2` / `elevenlabs` / voice_id in `spec.json`, saved as `assets/vN.wav`
-(48kHz stereo). ~0.0146 cr/word.
-*(For fully-unattended VO later: add a direct ElevenLabs API key + a `gen_voice.py`.
-Trade-off: you lose the "Isabella" Higgsfield preset.)*
+### Step 2 — voiceover (two ways)
+- **Unattended — `gen_voice.py` (direct ElevenLabs):** put `ELEVENLABS_API_KEY` in a
+  `.env` here (gitignored) and `voice.elevenlabs_voice_id` in `spec.json`. `make_video.py`
+  then runs it automatically → hands-off. Direct ElevenLabs also exposes `stability`/`style`
+  for more modulation. Bills in USD (~$0.05–0.10 / 1k chars).
+- **Agent-driven (Higgsfield MCP):** ask Claude to generate VO via `text2speech_v2` /
+  `elevenlabs` (Isabella preset). ~0.0146 cr/word.
+
+Either way, output is `assets/v{id}.wav` (48 kHz stereo).
 
 ### Step 3 — captions
 ```
