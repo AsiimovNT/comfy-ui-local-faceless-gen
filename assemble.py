@@ -20,6 +20,8 @@ FFMPEG = r"E:\faceless\kannada_reel\bin\ffmpeg.exe"
 spec = json.load(open(os.path.join(ROOT, "spec.json"), encoding="utf-8"))
 data = json.load(open(os.path.join(ROOT, "plan.json"), encoding="utf-8"))
 plan = data["plan"]
+spec_by_id = {s["id"]: s for s in spec["segments"]}
+ANIM = os.path.join(ASSETS, "anim")
 
 W, H, FPS = spec["width"], spec["height"], spec["fps"]
 LEAD = spec["timing"]["lead"]
@@ -54,6 +56,29 @@ def kb_expr(mode, n):
     return ("1+%f*on/%d" % (ZOOM, d), ctr_x, ctr_y)   # push_in
 
 
+def enable_expr(pattern):
+    """ffmpeg overlay enable= expression (commas escaped for the filtergraph).
+    t is segment-local seconds. Add patterns here to extend the engine."""
+    if pattern == "blink":     # brief closed state every ~2.7s
+        return r"lt(mod(t+2.2\,2.7)\,0.10)"
+    if pattern == "flicker":   # fast gentle pulsing (~6 Hz, on ~half)
+        return r"lt(mod(t\,0.16)\,0.08)"
+    if pattern == "drift":     # slow on/off breathing for ambient elements
+        return r"lt(mod(t\,2.0)\,1.0)"
+    return r"lt(mod(t+2.2\,2.7)\,0.10)"
+
+
+def anim_overlays(seg):
+    """Region overlay files that actually exist for this segment, else []."""
+    out = []
+    stem = os.path.splitext(seg["image"])[0]
+    for blk in seg.get("animate", []):
+        p = os.path.join(ANIM, "%s__%s_0.png" % (stem, blk["element"]))
+        if os.path.exists(p):
+            out.append((p, blk["pattern"]))
+    return out
+
+
 # ---- 1) per-segment video ---------------------------------------------------
 seg_files = []
 for p in plan:
@@ -63,6 +88,40 @@ for p in plan:
         sys.exit("missing image: %s" % src)
 
     n = max(2, int(round(p["seg_dur"] * FPS)))
+    dur = p["seg_dur"]
+    overlays = anim_overlays(spec_by_id.get(i, {}))
+
+    if overlays:
+        # content-aware limited animation: base still + region overlays composited
+        # with per-pattern timing. Each overlay is transparent except its region.
+        scl = "scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d,fps=%d,setsar=1" % (W, H, W, H, FPS)
+        args = [FFMPEG, "-y", "-loglevel", "error", "-loop", "1", "-t", "%.3f" % dur, "-i", src]
+        for ov, _ in overlays:
+            args += ["-loop", "1", "-t", "%.3f" % dur, "-i", ov]
+        fc = ["[0:v]%s[b]" % scl]
+        for idx in range(len(overlays)):
+            fc.append("[%d:v]%s[r%d]" % (idx + 1, scl, idx))
+        prev = "b"
+        for idx, (_, pat) in enumerate(overlays):
+            lab = "c%d" % idx
+            fc.append("[%s][r%d]overlay=0:0:enable=%s[%s]" % (prev, idx, enable_expr(pat), lab))
+            prev = lab
+        final = prev
+        if p.get("title_card"):
+            t_in, t_hold = 0.4, dur - 0.8
+            fc.append("[%s]drawtext=text='%s':fontfile='C\\:/Windows/Fonts/impact.ttf':"
+                      "fontsize=110:fontcolor=white:borderw=8:bordercolor=black:x=(w-text_w)/2:y=(h-text_h)/2:"
+                      "alpha='if(lt(t\\,%f)\\,t/%f\\,if(lt(t\\,%f)\\,1\\,max(0\\,1-(t-%f)/0.4)))'[vout]"
+                      % (final, t_in, t_in, t_hold, t_hold))
+            final = "vout"
+        out = os.path.join(WORK, "seg%02d.mp4" % i)
+        run(args + ["-filter_complex", ";".join(fc), "-map", "[%s]" % final,
+                    "-frames:v", str(n), "-r", str(FPS), "-c:v", "libx264",
+                    "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", out])
+        seg_files.append(out)
+        print("  video S%-2d %-24s %6.2fs (%d frames, anim:%s)"
+              % (i, p["image"], dur, n, "+".join(o[1] for o in overlays)))
+        continue
 
     if MOTION:
         pre = os.path.join(WORK, "pre%d.png" % i)

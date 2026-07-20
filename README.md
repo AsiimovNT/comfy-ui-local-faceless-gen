@@ -88,6 +88,32 @@ Reads `plan.json`. Locked-off stills (no jitter). Burns captions. Auto-mixes
 - `render.width/height`: 1920×1088 (÷16, ≥1080p). Drop to 1536×864 for ~2× faster local gen.
 - `caption_style.margin_v`: raise to lift captions off faces in close-ups.
 
+## Content-aware animation (limited / cutout style)
+
+Bring shots to life by swapping near-identical frames (eyes open↔closed = blink),
+done right so it never flickers: the variant is made by **inpainting one region**,
+so every other pixel is identical. Format-agnostic and reusable for any video.
+
+**The decision is a vision pass.** After images are generated, look at each frame
+and author `animate` blocks from what's actually in it — the general rules:
+`face → blink`, `lantern / candle / fire / lamp → flicker`, `snow / rain → drift`.
+
+Per-segment schema in `spec.json`:
+```json
+"animate": [
+  {"element":"eyes","pattern":"blink","shape":"ellipse","mask":[0.28,0.47,0.60,0.58],
+   "prompt":"both eyes fully closed, symmetric closed eyes, thin closed eyelash lines"},
+  {"element":"lantern","pattern":"flicker","shape":"rect","mask":[0.66,0.12,0.90,0.62],
+   "prompt":"paper lantern glowing noticeably brighter, warm flickering light"}
+]
+```
+- `python gen_anim.py` — inpaints each region's variant (local, ~30-80s each) and
+  saves a feathered transparent overlay to `assets/anim/`.
+- `assemble.py` composites overlays onto the base with per-pattern timing
+  (`enable_expr`), so multiple regions animate independently in one shot.
+- Add new looks by adding a `pattern` to `enable_expr()` — the rest is generic.
+- Best on close-ups (where a blink reads); skip wide shots.
+
 ## Requirements (paths are machine-specific)
 - **ComfyUI** with Z-Image Turbo, serving at `render.url` (default `http://127.0.0.1:8188`).
 - **Python 3** with `faster-whisper` (used by `build_captions.py`).

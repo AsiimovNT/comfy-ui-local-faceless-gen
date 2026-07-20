@@ -43,9 +43,15 @@ def probe(path):
     return float(out)
 
 
-STRIP = " \t\r\n,.;:!?—–-\"'()[]“”‘’"
+# Keep sentence punctuation ON the token so captions read "own her. Not" not
+# "own her Not". Only strip wrapping quotes/brackets. Alignment uses norm() which
+# strips punctuation anyway, so matching against whisper is unaffected.
+WRAP = "\"'()[]“”‘’"
 def tokenize(s):
-    return [t.strip(STRIP) for t in s.split() if t.strip(STRIP)]
+    return [t.strip(WRAP) for t in s.split() if t.strip(WRAP)]
+
+def ends_sentence(tok):
+    return tok.rstrip("\"')]" + "”’").endswith((".", "!", "?", ":", "…"))
 
 def norm(w):
     return re.sub(r"[^a-z0-9]", "", w.lower())
@@ -163,7 +169,15 @@ for s in segs:
     times = align(toks, whisper_words(wav), dur)
 
     gbase = start + LEAD
-    chunks = [list(range(j, min(j + WPL, len(toks)))) for j in range(0, len(toks), WPL)]
+    # chunk ≤WPL words, but also break at sentence ends so a caption line never
+    # straddles a period/question mark.
+    chunks, cur = [], []
+    for k in range(len(toks)):
+        cur.append(k)
+        if len(cur) >= WPL or ends_sentence(toks[k]):
+            chunks.append(cur); cur = []
+    if cur:
+        chunks.append(cur)
     for ch in chunks:
         chunk_words = [toks[k] for k in ch]
         for pos, k in enumerate(ch):
