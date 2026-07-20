@@ -7,6 +7,10 @@ Local-first pipeline for Lost-Legacy-style animated history videos ("Your Life a
 voice all live there. To make a new video, copy this folder, rewrite `spec.json`,
 and run the four steps below.
 
+**Driver:** the `faceless-video-engine` Claude skill (`/faceless-video-engine`) runs
+this whole thing interactively — topic ideas → script → spec.json → images → VO →
+captions → animation → mp4 → metadata — stopping only at the real decision points.
+
 ## One command
 
 ```
