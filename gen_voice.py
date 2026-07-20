@@ -37,19 +37,24 @@ def load_key():
             line = line.strip()
             if line.startswith("ELEVENLABS_API_KEY"):
                 return line.split("=", 1)[1].strip().strip('"').strip("'")
-    sys.exit("No ELEVENLABS_API_KEY found. Put it in a .env file in %s or set the env var." % ROOT)
+    return None   # not configured -> caller skips gracefully (VO falls back to MCP)
 
 
 spec = json.load(open(os.path.join(ROOT, "spec.json"), encoding="utf-8"))
 V = spec.get("voice", {})
 voice_id = V.get("elevenlabs_voice_id")
-if not voice_id:
-    sys.exit('spec.json voice.elevenlabs_voice_id is not set. Add the voice id you picked on ElevenLabs.')
 model = V.get("elevenlabs_model", "eleven_multilingual_v2")
 # lower stability => more dynamic/modulated narration (the lever the MCP hid)
 vs = V.get("voice_settings", {"stability": 0.40, "similarity_boost": 0.75,
                               "style": 0.35, "use_speaker_boost": True})
 KEY = load_key()
+
+# Not set up for direct ElevenLabs? Skip cleanly (exit 0) so make_video.py falls
+# back to the credits-based MCP voiceover path instead of crashing.
+if not KEY or not voice_id:
+    print("gen_voice: no ElevenLabs key/voice_id configured -- skipping "
+          "(VO will use the Higgsfield MCP / credits path).")
+    sys.exit(0)
 
 segs = spec["segments"]
 todo = [s for s in segs if not os.path.exists(os.path.join(ASSETS, "v%d.wav" % s["id"]))]
